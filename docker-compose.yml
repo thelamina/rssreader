@@ -1,0 +1,56 @@
+services:
+    app:
+        container_name: web-service
+        build: .
+        depends_on:
+            db:
+                condition: service_healthy
+        env_file:
+            - ./.env
+        environment:
+            DB_URL: 'postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable'
+        ports:
+            - '8000:8000'
+        networks:
+            - app-network
+
+    db:
+        image: postgres:latest
+        container_name: database
+        env_file:
+            - ./.env
+        environment:
+            POSTGRES_DB: ${DB_NAME}
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        ports:
+            - '5432:5432'
+        healthcheck:
+            test: ['CMD-SHELL', 'pg_isready -U ${DB_USER}']
+            interval: 10s
+            timeout: 5s
+            retries: 5
+        networks:
+            - app-network
+        volumes:
+            - pg-data:/var/lib/postgresql/data
+
+    pgadmin:
+        image: dpage/pgadmin4:latest
+        container_name: pg-admin
+        env_file:
+            - ./.env
+        environment:
+            PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+            PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+        ports:
+            - '5050:80'
+        networks:
+            - app-network
+
+networks:
+    app-network:
+        driver: bridge
+
+volumes:
+    pg-data:
