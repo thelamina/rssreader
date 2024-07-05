@@ -75,11 +75,10 @@ func main() {
 		Addr:    ":" + port,
 	}
 
-	log.Printf("Server starting on port %v", port)
+	log.Printf("Server is listening on port %v", port)
 
 	server_err := server.ListenAndServe()
 	if server_err != nil {
 		log.Fatal((err))
 	}
-
 }
